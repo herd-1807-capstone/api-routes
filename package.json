@@ -1,0 +1,25 @@
+{
+  "main": "./server/index.js",
+  "name": "herd-capstone",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^0.18.0",
+    "compression": "^1.7.3",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
+    "firebase": "^5.5.2",
+    "firebase-admin": "^6.0.0",
+    "firebaseui": "^3.4.1",
+    "morgan": "^1.9.1"
+  },
+  "scripts": {
+    "start": "node ./server/index.js",
+    "start-dev": "react-scripts start && nodemon server",
+    "build": "react-scripts build",
+    "start-all": "nodemon ./server/index.js & react-scripts start",
+    "start-backend": "nodemon ./server/index.js",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
