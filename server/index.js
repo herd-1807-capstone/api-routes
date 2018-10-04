@@ -2,17 +2,10 @@ const path = require('path')
 const express = require('express')
 const morgan = require('morgan')
 const compression = require('compression')
-const session = require('express-session')
 const PORT = process.env.PORT || 8080
 const app = express()
 
 module.exports = app
-
-if (process.env.NODE_ENV === 'test') {
-  after('close the session store', () => sessionStore.stopExpiringSessions())
-}
-
-// if (process.env.NODE_ENV !== 'production') require('../secrets')
 
 const createApp = () => {
   // logging middleware
@@ -36,9 +29,6 @@ const createApp = () => {
 
   app.use('/api', require('./api'))
 
-  // static file-serving middleware
-  app.use(express.static(path.join(__dirname, '..', 'public')))
-
   // any remaining requests with an extension (.js, .css, etc.) send 404
   app.use((req, res, next) => {
     if (path.extname(req.path).length) {
@@ -49,11 +39,6 @@ const createApp = () => {
       next()
     }
   })
-
-  // sends index.html
-  // app.use('*', (req, res) => {
-  //   res.sendFile(path.join(__dirname, '..', 'public/index.html'))
-  // })
 
   // error handling endware
   app.use((err, req, res, next) => {

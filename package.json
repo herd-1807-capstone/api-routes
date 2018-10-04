@@ -14,12 +14,9 @@
     "morgan": "^1.9.1"
   },
   "scripts": {
-    "start": "node ./server/index.js",
-    "start-dev": "react-scripts start && nodemon server",
-    "build": "react-scripts build",
-    "start-all": "nodemon ./server/index.js & react-scripts start",
-    "start-backend": "nodemon ./server/index.js",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "start": "set NODE_ENV=production && node ./server/index.js",
+    "start-dev": "set NODE_ENV=development && nodemon server",
+    "start-all": "nodemon ./server/index.js",
+    "start-backend": "nodemon ./server/index.js"
   }
 }
