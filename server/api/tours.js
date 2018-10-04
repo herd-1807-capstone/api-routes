@@ -201,6 +201,7 @@ router.post('/:tourId/users/', async(req, res, next) => {
 // delete a user id from a tour
 router.delete('/:tourId/users/:userId', async(req, res, next) => {
   try{
+    console.log("I want to delete!!")
     const authUser = req.authUser;
     if(authUser.status !== 'admin'){
       res.status(403).send('Forbidden');
