@@ -1,5 +1,6 @@
 const {db} = require('./firebaseadmin');
-const router = require('express').Router();
+const firebase = require('firebase')
+const router = require('express').Router()
 module.exports = router;
 
 // GET /users
@@ -45,7 +46,7 @@ router.get('/free', async (req, res, next) => {
       return ;
     }
 
-    const usersSnapshot = db.ref(`/users/`).once('value');
+    const usersSnapshot = await db.ref(`/users/`).once('value');
     const users = Object.values(usersSnapshot.val());
     let selectedUser = users.filter((user) => {
       return (!(user.hasOwnProperty('tour')) || user.tour === 'null');
@@ -85,7 +86,7 @@ router.post('/', async(req, res, next) => {
     }
 
     // parse info from req.body - email, lat, lng, name, status, tour, visible
-    let {email, lat, lng, name, status, tour, visible} = req.body;
+    const {email, lat, lng, name, status, tour, visibie} = req.body;
 
     const user = {email, lat, lng, name};
     if (tour) user.tour = tour;
@@ -113,23 +114,24 @@ router.put('/:userId', async(req, res, next) => {
       res.status(403).send('Forbidden');
       return;
     }
-
+    
     const userId = req.params.userId;
     const {email, lat, lng, name, status, tour, visible} = req.body;
-
+    console.log("going to set user")
     const user = {};
-    if (email) user.email = email;
-    if (lat) user.lat = lat;
-    if (lng) user.lng = lng;
-    if (name) user.name = name;
-    if (status) user.status = status;
-    if (tour) user.tour = tour;
-    if (visible !== undefined) user.visible = visible;
+    if(email) user.email = email;
+    if(lat) user.lat = lat;
+    if(lng) user.lng = lng;
+    if(name) user.name = name;
+    if(status) user.status = status;
+    if(tour) user.tour = tour;
+    if(visible !== undefined) user.visible = visible;
+    console.log(user)
+    console.log(`Going to put ${userId} as a updata ${user}`)
+    const update = await db.ref(`/users/${userId}`).update(user);
 
-    await db.ref(`/users/${userId}`).update(user);
-
-    res.status(201).send();
-  } catch (err){
+    res.status(201).json(update);
+  }catch(err){
     next(err);
   }
 });

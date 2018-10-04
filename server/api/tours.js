@@ -1,5 +1,6 @@
 const {db} = require('./firebaseadmin');
-const router = require('express').Router();
+const firebase = require('firebase')
+const router = require('express').Router()
 module.exports = router;
 
 // GET /tours/:tourId
@@ -168,9 +169,11 @@ router.delete('/:tourId/spots/:spotId', async(req, res, next) => {
 });
 
 // add a new member i.e., userId to a tour
-router.post('/:tourId/users', async(req, res, next) => {
+router.post('/:tourId/users/', async(req, res, next) => {
   try{
     const authUser = req.authUser;
+
+    
     if(authUser.status !== 'admin'){
       res.status(403).send('Forbidden');
       return;
@@ -178,10 +181,12 @@ router.post('/:tourId/users', async(req, res, next) => {
 
     // First, get the list of userIds of a tour
     const {userId} = req.body;
-    const tourId = req.params.tourId;
+    const { tourId } = req.params
     const tourSnapshot = await db.ref(`/tours/${tourId}`).once('value');
     const tour = tourSnapshot.val();
-    const users = tour.users;
+    const users = Array.isArray(tour.user) ? tour.users : Object.values(tour.users)
+
+    console.log(users)
     // check if current user is either an admin of this tour or a member.
     if(!users || users.indexOf(authUser.uid) < 0){
       res.status(403).send('Forbidden');
