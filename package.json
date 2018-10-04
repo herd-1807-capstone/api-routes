@@ -4,7 +4,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "axios": "^0.18.0",
     "compression": "^1.7.3",
     "express": "^4.16.3",
     "express-session": "^1.15.6",
@@ -16,7 +15,6 @@
   "scripts": {
     "start": "set NODE_ENV=production && node ./server/index.js",
     "start-dev": "set NODE_ENV=development && nodemon server",
-    "start-all": "nodemon ./server/index.js",
     "start-backend": "nodemon ./server/index.js"
   }
 }
