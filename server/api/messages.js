@@ -33,14 +33,23 @@ const transformObj = (obj, str1, str2) => {
 router.get('/:userId', async (req, res, next) => {
   try {
     const fromId = req.authUser;
+    // const fromId = '4GDfXiHKt1Pf5VbKGuqsR2bU9pl2';
     const toId = req.params.userId;
 
     const snapshot = await db.ref(`/tours/disney_tour/messages/`).once('value');
-    const toUser = await db.ref(`/tours/users/${toId}`).once('value');
-    const toName = toUser.val();
-    console.log(toName);
 
-    const messages = transformObj(snapshot.val(), fromId, toId);
+    const toUser = await db.ref(`/users/${toId}`).once('value');
+    const toName = toUser.val().name;
+    const fromUser = await db.ref(`/users/${fromId}`).once('value');
+    const fromName = fromUser.val().name;
+
+    const messages = transformObjWithNames(
+      snapshot.val(),
+      fromId,
+      toId,
+      fromName,
+      toName
+    );
 
     if (messages) {
       res.json(messages);
@@ -67,6 +76,7 @@ router.post('/:userId', async (req, res, next) => {
     await db.ref('/tours/disney_tour/messages/').update(message);
 
     const snapshot = await db.ref(`/tours/disney_tour/messages/`).once('value');
+
     const allMessages = transformObj(snapshot.val(), fromId, toId);
 
     res.status(201).json(allMessages);
