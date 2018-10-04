@@ -1,6 +1,5 @@
 const {db} = require('./firebaseadmin');
-const firebase = require('firebase')
-const router = require('express').Router()
+const router = require('express').Router();
 module.exports = router;
 
 // GET /users
@@ -18,16 +17,6 @@ router.get('/', (req, res, next) => {
       .once('value')
       .then(usersSnapshot => {
         const users = Object.values(usersSnapshot.val());
-        // console.log(users)
-        // let selectedUser = users.filter((user)=>{
-        //   if (!(user.hasOwnProperty('tour'))){
-        //     return true
-        //   } else if (user.tour === currentUser.tour || user.tour === 'null'){
-        //     return true
-        //   } else {
-        //     return false
-        //   }
-        // })
         res.json(users);
     })
     .catch(err => {
@@ -86,7 +75,7 @@ router.post('/', async(req, res, next) => {
     }
 
     // parse info from req.body - email, lat, lng, name, status, tour, visible
-    const {email, lat, lng, name, status, tour, visibie} = req.body;
+    let {email, lat, lng, name, status, tour, visible} = req.body;
 
     const user = {email, lat, lng, name};
     if (tour) user.tour = tour;
@@ -114,10 +103,10 @@ router.put('/:userId', async(req, res, next) => {
       res.status(403).send('Forbidden');
       return;
     }
-    
+
     const userId = req.params.userId;
     const {email, lat, lng, name, status, tour, visible} = req.body;
-    console.log("going to set user")
+
     const user = {};
     if(email) user.email = email;
     if(lat) user.lat = lat;
@@ -126,8 +115,7 @@ router.put('/:userId', async(req, res, next) => {
     if(status) user.status = status;
     if(tour) user.tour = tour;
     if(visible !== undefined) user.visible = visible;
-    console.log(user)
-    console.log(`Going to put ${userId} as a updata ${user}`)
+
     const update = await db.ref(`/users/${userId}`).update(user);
 
     res.status(201).json(update);
