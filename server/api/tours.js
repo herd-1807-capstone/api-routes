@@ -1,4 +1,5 @@
 const {db} = require('./firebaseadmin');
+const firebase = require('firebase')
 const router = require('express').Router()
 module.exports = router;
 
@@ -178,9 +179,11 @@ router.delete('/:tourId/spots/:spotId', async(req, res, next) => {
 });
 
 // add a new member i.e., userId to a tour
-router.post('/:tourId/users', async(req, res, next) => {
+router.post('/:tourId/users/', async(req, res, next) => {
   try{
     const authUser = req.authUser;
+
+    
     if(authUser.status !== 'admin'){
       res.status(403).send('Forbidden');
       return;
@@ -188,19 +191,23 @@ router.post('/:tourId/users', async(req, res, next) => {
 
     // First, get the list of userIds of a tour
     const {userId} = req.body;
-
+    const { tourId } = req.params
     const tourSnapshot = await db.ref(`/tours/${tourId}`).once('value');
     const tour = tourSnapshot.val();
-    const users = tour.users;
+    const users = Array.isArray(tour.user) ? tour.users : Object.values(tour.users)
+
+    console.log(users)
     // check if current user is either an admin of this tour or a member.
-    if(!users || users.indexOf(user.uid) < 0){
+    if(!users || users.indexOf(authUser.uid) < 0){
       res.status(403).send('Forbidden');
       return;
     }
+    // console.log("Reach the put user API!!")
+    console.log(userId)
     users.push(userId);
 
     await db.ref(`/tours/${tourId}`).update({users});
-    res.status(201);
+    res.status(201).json(userId);
   }catch(err){
     next(err);
   }
@@ -243,26 +250,26 @@ router.put('/:tourId/users/:userId', async (req, res, next) => {
   const {tourId, userId} = req.params;
   const {lat, lng} = req.body;
   try{
-    // const authUser = req.authUser;
+    const authUser = req.authUser;
 
-    // const tourSnapshot = await db.ref(`/tours/${tourId}`).once('value');
-    // const tour = tourSnapshot.val();
-    // if(!tour){
-    //   res.status(404).send('Tour Not Found');
-    //   return;
-    // }
+    const tourSnapshot = await db.ref(`/tours/${tourId}`).once('value');
+    const tour = tourSnapshot.val();
+    if(!tour){
+      res.status(404).send('Tour Not Found');
+      return;
+    }
 
-    // if(!tour.users || tour.users.indexOf(authUser.uid) < 0){
-    //   res.status(403).send('Forbidden');
-    //   return;
-    // }
+    if(!tour.users || tour.users.indexOf(authUser.uid) < 0){
+      res.status(403).send('Forbidden');
+      return;
+    }
 
-    // const userSnapshot = await db.ref(`/users/${userId}`).once('value');
-    // const user = userSnapshot.val();
-    // if(!user){
-    //   res.status(404).send('User Not Found');
-    //   return;
-    // }
+    const userSnapshot = await db.ref(`/users/${userId}`).once('value');
+    const user = userSnapshot.val();
+    if(!user){
+      res.status(404).send('User Not Found');
+      return;
+    }
 
     // update the user with a new pair of lat and lng
     await db.ref(`/users/${userId}`).update({
