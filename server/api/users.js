@@ -137,7 +137,7 @@ router.put('/:userId', async(req, res, next) => {
     }
 
     const userId = req.params.userId;
-    const {email, lat, lng, name, status, tour, visibie} = req.body;
+    const {email, lat, lng, name, status, tour, visible} = req.body;
 
     const user = {};
     if(email) user.email = email;
