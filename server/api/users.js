@@ -106,7 +106,7 @@ router.post('/', async(req, res, next) => {
     }
 
     // parse info from req.body - email, lat, lng, name, status, tour, visible
-    const {email, lat, lng, name, status, tour, visibie} = req.body;
+    let {email, lat, lng, name, status, tour, visible} = req.body;
 
     const user = {email, lat, lng, name};
     if(tour) user.tour = tour;
