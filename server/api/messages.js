@@ -2,6 +2,21 @@ const { db } = require('./firebaseadmin');
 const router = require('express').Router();
 module.exports = router;
 
+const transformObjWithNames = (obj, str1, str2, name1, name2) => {
+  const list = Object.keys(obj);
+  const newArray = list.map(item => {
+    const { fromId, toId } = obj[item];
+    const fromName = fromId === str1 ? name1 : name2;
+    const toName = toId === str1 ? name1 : name2;
+    return { key: item, ...obj[item], fromName, toName };
+  });
+  return newArray.filter(
+    item =>
+      (item.fromId === str1 && item.toId === str2) ||
+      (item.fromId === str2 && item.toId === str1)
+  );
+};
+
 const transformObj = (obj, str1, str2) => {
   const list = Object.keys(obj);
   const newArray = list.map(item => {
@@ -21,6 +36,10 @@ router.get('/:userId', async (req, res, next) => {
     const toId = req.params.userId;
 
     const snapshot = await db.ref(`/tours/disney_tour/messages/`).once('value');
+    const toUser = await db.ref(`/tours/users/${toId}`).once('value');
+    const toName = toUser.val();
+    console.log(toName);
+
     const messages = transformObj(snapshot.val(), fromId, toId);
 
     if (messages) {
