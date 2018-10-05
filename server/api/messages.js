@@ -29,12 +29,12 @@ const transformObj = (obj, str1, str2) => {
   );
 };
 
-// GET /api/chat/:userId
-router.get('/:userId', async (req, res, next) => {
+// GET /api/chat/:toId
+router.get('/:toId', async (req, res, next) => {
   try {
     const fromId = req.authUser;
     // const fromId = '4GDfXiHKt1Pf5VbKGuqsR2bU9pl2';
-    const toId = req.params.userId;
+    const toId = req.params.toId;
 
     const snapshot = await db.ref(`/tours/disney_tour/messages/`).once('value');
 
@@ -43,7 +43,7 @@ router.get('/:userId', async (req, res, next) => {
     const fromUser = await db.ref(`/users/${fromId}`).once('value');
     const fromName = fromUser.val().name;
 
-    const messages = transformObjWithNames(
+    const conversation = transformObjWithNames(
       snapshot.val(),
       fromId,
       toId,
@@ -51,8 +51,8 @@ router.get('/:userId', async (req, res, next) => {
       toName
     );
 
-    if (messages) {
-      res.json(messages);
+    if (conversation) {
+      res.json(conversation);
     } else res.status(404).send('Not Found');
   } catch (error) {
     next(error);
