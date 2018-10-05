@@ -29,12 +29,20 @@ const transformObj = (obj, str1, str2) => {
   );
 };
 
-// GET /api/chat/:toId
-router.get('/:toId', async (req, res, next) => {
+// POST /api/chat/:userId
+router.post('/:userId', async (req, res, next) => {
   try {
     const fromId = req.authUser;
-    // const fromId = '4GDfXiHKt1Pf5VbKGuqsR2bU9pl2';
-    const toId = req.params.toId;
+    const { toId, text } = req.body;
+    const newMessage = { fromId, text, toId };
+    const newKey = await db
+      .ref('/tours/disney_tour')
+      .child(`messages`)
+      .push().key;
+
+    const message = {};
+    message[`${newKey}`] = newMessage;
+    await db.ref('/tours/disney_tour/messages/').update(message);
 
     const snapshot = await db.ref(`/tours/disney_tour/messages/`).once('value');
 
@@ -51,35 +59,7 @@ router.get('/:toId', async (req, res, next) => {
       toName
     );
 
-    if (conversation) {
-      res.json(conversation);
-    } else res.status(404).send('Not Found');
-  } catch (error) {
-    next(error);
-  }
-});
-
-// POST /api/chat/:userId
-router.post('/:userId', async (req, res, next) => {
-  try {
-    const fromId = req.authUser;
-    const { toId, text } = req.body;
-
-    const newMessage = { fromId, text, toId };
-    const newKey = await db
-      .ref('/tours/disney_tour')
-      .child(`messages`)
-      .push().key;
-
-    const message = {};
-    message[`${newKey}`] = newMessage;
-    await db.ref('/tours/disney_tour/messages/').update(message);
-
-    const snapshot = await db.ref(`/tours/disney_tour/messages/`).once('value');
-
-    const allMessages = transformObj(snapshot.val(), fromId, toId);
-
-    res.status(201).json(allMessages);
+    res.status(201).json(conversation);
   } catch (error) {
     next(error);
   }
