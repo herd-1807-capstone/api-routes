@@ -8,7 +8,10 @@ router.get('/:tourId', async(req, res, next) => {
     const tourId = req.params.tourId;
     const tourSnapshot = await db.ref(`/tours/${tourId}`).once('value');
     const tour = tourSnapshot.val();
-
+    if(!tour){
+      res.json({});
+      return;
+    }
     const users = tour.users;
     // check if current user is either an admin of this tour or a member.
     if(!users || users.indexOf(req.authUser.uid) < 0){
@@ -31,13 +34,19 @@ router.post('/', async(req, res, next) => {
       return;
     }
 
-    const {name} = req.body;
+    const {name, description, imgUrl} = req.body;
     const tour = {
       name,
-      guideUId: authUser.uid
+      guideUId: authUser.uid,
+      users: {
+        "0": authUser.uid
+      },
+      description,
+      imgUrl, 
     };
 
     const tourCreated = await db.ref(`/tours/`).push(tour);
+    const update = await db.ref(`/users/${authUser.uid}`).update({"tour": tourCreated.key});
     res.json({
       ...tour,
       key: tourCreated.key
