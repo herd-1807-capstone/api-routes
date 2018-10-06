@@ -189,7 +189,7 @@ router.post('/:tourId/users/', async(req, res, next) => {
     const { tourId } = req.params;
     const tourSnapshot = await db.ref(`/tours/${tourId}`).once('value');
     const tour = tourSnapshot.val();
-    const users = Array.isArray(tour.user) ? tour.users : Object.values(tour.users);
+    const users = Array.isArray(tour.users) ? tour.users : Object.values(tour.users);
 
     // check if current user is either an admin of this tour or a member.
     if(!users || users.indexOf(authUser.uid) < 0){
@@ -210,7 +210,6 @@ router.post('/:tourId/users/', async(req, res, next) => {
 // delete a user id from a tour
 router.delete('/:tourId/users/:userId', async(req, res, next) => {
   try{
-    console.log("I want to delete!!")
     const authUser = req.authUser;
     if(authUser.status !== 'admin'){
       res.status(403).send('Forbidden');
