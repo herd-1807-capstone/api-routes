@@ -1,24 +1,21 @@
-const {db} = require('./firebaseadmin');
+const { db } = require('./firebaseadmin');
 const router = require('express').Router();
 module.exports = router;
 
-// GET /api/chat/:userId ===> MIGRATE TO FRONT END FOR REAL TIME TREATMENT
-router.get('/:userId', async (req, res, next) => {
-  try {
-    // const userAuth = firebase.auth().currentUser;
-    // const userId = req.params.userId;
-    // if (userId === userAuth) {
-    const snapshot = await db.ref(`/tours/disney_tour/messages/`).once('value');
-    const messages = snapshot.val();
-
-    if (messages) {
-      res.json(messages);
-    } else res.status(404).send('Not Found');
-    // } else res.status(403).send('forbidden');
-  } catch (error) {
-    next(error);
-  }
-});
+const transformObjWithNames = (obj, str1, str2, name1, name2) => {
+  const list = Object.keys(obj);
+  const newArray = list.map(item => {
+    const { fromId, toId } = obj[item];
+    const fromName = fromId === str1 ? name1 : name2;
+    const toName = toId === str1 ? name1 : name2;
+    return { key: item, ...obj[item], fromName, toName };
+  });
+  return newArray.filter(
+    item =>
+      (item.fromId === str1 && item.toId === str2) ||
+      (item.fromId === str2 && item.toId === str1)
+  );
+};
 
 const transformObj = (obj, str1, str2) => {
   const list = Object.keys(obj);
@@ -35,11 +32,8 @@ const transformObj = (obj, str1, str2) => {
 // POST /api/chat/:userId
 router.post('/:userId', async (req, res, next) => {
   try {
-    // const userAuth = firebase.auth().currentUser;
-    const fromId = req.params.userId;
+    const fromId = req.authUser;
     const { toId, text } = req.body;
-
-    // if (fromId === userAuth) {
     const newMessage = { fromId, text, toId };
     const newKey = await db
       .ref('/tours/disney_tour')
@@ -51,11 +45,21 @@ router.post('/:userId', async (req, res, next) => {
     await db.ref('/tours/disney_tour/messages/').update(message);
 
     const snapshot = await db.ref(`/tours/disney_tour/messages/`).once('value');
-    const allMessages = transformObj(snapshot.val(), fromId, toId);
 
-    res.status(201).json(allMessages);
+    const toUser = await db.ref(`/users/${toId}`).once('value');
+    const toName = toUser.val().name;
+    const fromUser = await db.ref(`/users/${fromId}`).once('value');
+    const fromName = fromUser.val().name;
 
-    // } else res.status(403).send('forbidden!');
+    const conversation = transformObjWithNames(
+      snapshot.val(),
+      fromId,
+      toId,
+      fromName,
+      toName
+    );
+
+    res.status(201).json(conversation);
   } catch (error) {
     next(error);
   }

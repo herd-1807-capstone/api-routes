@@ -122,8 +122,8 @@ router.post('/:tourId/spots', async(req, res, next) => {
     }
 
     const tourId = req.params.tourId;
-    const {description, lat, lng, name} = req.body;
-    const spot = {description, lat, lng, name};
+    const {description, lat, lng, name, imgUrl} = req.body;
+    const spot = {description, lat, lng, name, imgUrl};
     const spotAdded = await db.ref(`/tours/${tourId}/spots`).push(spot);
 
     res.json({key: spotAdded.key});
@@ -142,8 +142,8 @@ router.put('/:tourId/spots/:spotId', async(req, res, next) => {
     }
 
     const {tourId, spotId} = req.params;
-    const {description, lat, lng, name} = req.body;
-    const spot = {description, lat, lng, name};
+    const {description, lat, lng, name, imgUrl} = req.body;
+    const spot = {description, lat, lng, name, imgUrl};
     await db.ref(`/tours/${tourId}/spots/${spotId}`).update(spot);
 
     res.status(201).send();
@@ -205,6 +205,7 @@ router.post('/:tourId/users/', async(req, res, next) => {
 // delete a user id from a tour
 router.delete('/:tourId/users/:userId', async(req, res, next) => {
   try{
+    console.log("I want to delete!!")
     const authUser = req.authUser;
     if(authUser.status !== 'admin'){
       res.status(403).send('Forbidden');
