@@ -118,8 +118,8 @@ router.post('/:tourId/spots', async(req, res, next) => {
     }
 
     const tourId = req.params.tourId;
-    const {description, lat, lng, name} = req.body;
-    const spot = {description, lat, lng, name};
+    const {description, lat, lng, name, imgUrl} = req.body;
+    const spot = {description, lat, lng, name, imgUrl};
     const spotAdded = await db.ref(`/tours/${tourId}/spots`).push(spot);
 
     res.json({key: spotAdded.key});
@@ -138,8 +138,8 @@ router.put('/:tourId/spots/:spotId', async(req, res, next) => {
     }
 
     const {tourId, spotId} = req.params;
-    const {description, lat, lng, name} = req.body;
-    const spot = {description, lat, lng, name};
+    const {description, lat, lng, name, imgUrl} = req.body;
+    const spot = {description, lat, lng, name, imgUrl};
     await db.ref(`/tours/${tourId}/spots/${spotId}`).update(spot);
 
     res.status(201).send();
