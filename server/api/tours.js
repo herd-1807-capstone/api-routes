@@ -86,7 +86,7 @@ router.put('/:tourId', async(req, res, next) => {
       return;
     }
 
-    const {name} = req.body;
+    const {name, announcement} = req.body;
     const tourId = req.params.tourId;
     // make sure there is a tour with the given tour id and the currentUser has permission to change the tour.
     const tourSnapshot = await db.ref(`/tours/${tourId}`).once('value');
@@ -101,8 +101,12 @@ router.put('/:tourId', async(req, res, next) => {
       return;
     }
 
-    await db.ref(`/tours/${tourId}`).update({name});
-    res.status(201).send();
+    const tourUpdated = {}; // just name and/or announcement;
+    if(name) tourUpdated.name = name;
+    if(announcement) tourUpdated.announcement = announcement;
+
+    await db.ref(`/tours/${tourId}`).update(tourUpdated);
+    res.status(204).send();
   }catch(err){
     next(err);
   }
