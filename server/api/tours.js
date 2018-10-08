@@ -2,12 +2,23 @@ const {db} = require('./firebaseadmin');
 const router = require('express').Router();
 module.exports = router;
 
+router.get('/', async(req, res, next) => {
+  try {
+    const toursSnapshot = await db.ref(`/tours`).once('value');
+    const tours = toursSnapshot.val();
+    res.json(tours);
+  } catch (err){
+    next(err);
+  }
+})
+
 // GET /tours/:tourId
 router.get('/:tourId', async(req, res, next) => {
   try{
     const tourId = req.params.tourId;
     const tourSnapshot = await db.ref(`/tours/${tourId}`).once('value');
     const tour = tourSnapshot.val();
+<<<<<<< HEAD
     if(!tour){
       res.json({});
       return;
@@ -16,6 +27,10 @@ router.get('/:tourId', async(req, res, next) => {
     // check if current user is either an admin of this tour or a member.
     if(!users || users.indexOf(req.authUser.uid) < 0){
       res.status(403).send('Forbidden');
+=======
+    if (!tour){
+      res.status(404).send('Not Found');
+>>>>>>> 604153486d05291bc3e641243c8ebc41cd334ca5
       return;
     }
 
@@ -90,12 +105,12 @@ router.delete('/:tourId', async(req, res, next) => {
 router.put('/:tourId', async(req, res, next) => {
   try{
     const authUser = req.authUser;
-    if(authUser.status !== 'admin'){
-      res.status(403).send('Forbidden');
-      return;
-    }
+    // if(authUser.status !== 'admin'){
+    //   res.status(403).send('Forbidden');
+    //   return;
+    // }
 
-    const {name, announcement} = req.body;
+    const {name, announcement, users} = req.body;
     const tourId = req.params.tourId;
     // make sure there is a tour with the given tour id and the currentUser has permission to change the tour.
     const tourSnapshot = await db.ref(`/tours/${tourId}`).once('value');
@@ -105,14 +120,15 @@ router.put('/:tourId', async(req, res, next) => {
       return;
     }
 
-    if(!tour.users || !tour.users.indexOf(authUser.uid) < 0){
-      res.status(403).send('Forbidden');
-      return;
-    }
+    // if(!tour.users || !tour.users.indexOf(authUser.uid) < 0){
+    //   res.status(403).send('Forbidden');
+    //   return;
+    // }
 
     const tourUpdated = {}; // just name and/or announcement;
     if(name) tourUpdated.name = name;
     if(announcement) tourUpdated.announcement = announcement;
+    if(users) tourUpdated.users = users;
 
     await db.ref(`/tours/${tourId}`).update(tourUpdated);
     res.status(204).send();

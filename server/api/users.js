@@ -53,6 +53,7 @@ router.get('/:userId', async (req, res, next) => {
     const userId = req.params.userId;
     const userSnapshot = await db.ref(`/users/${userId}`).once('value');
     const user = userSnapshot.val();
+
     if (req.authUser.status === 'admin' || user.uid === userId){
       res.json(user);
     } else {
@@ -120,16 +121,17 @@ router.post('/', async(req, res, next) => {
 // PUT /users/:userId
 router.put('/:userId', async(req, res, next) => {
   try {
+    const userId = req.params.userId;
     const authUser = req.authUser;
-    // make sure the logged-in user is an admin.
-    if (authUser.status !== 'admin'){
+    // make sure the logged-in user is an admin or the account owner.
+    console.log(userId, authUser.uid);
+    console.log(authUser.status !== 'admin' && authUser.uid !== userId);
+    if (authUser.status !== 'admin' && authUser.uid !== userId){
       res.status(403).send('Forbidden');
       return;
     }
 
-    const userId = req.params.userId;
     const {email, lat, lng, name, status, tour, visible} = req.body;
-
     const user = {};
     if(email) user.email = email;
     if(lat) user.lat = lat;
