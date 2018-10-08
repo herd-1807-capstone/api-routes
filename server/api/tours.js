@@ -247,34 +247,39 @@ router.post('/:tourId/invitation/add', async(req, res, next) => {
     const authUser = req.authUser;
     console.log(authUser)
     const userId = authUser.uid
-    const { tourId, inviteeEmail} = req.params;
-  // first, find current user tour
-  const tourSnapshot = await db.ref(`/tours/${tourId}/`).once('value');
-  const tour = tourSnapshot.val();
-  if(!tour){
-    res.status(404).send('Tour not found');
-    return;
-  }
-  // second, check for invitations by invitee email, prevent duplicate
-  if(tour.hasOwnProperty("invitations")){
-    let invitee = tour.invitations.filter((invitation)=>{
-      if(Object.values(invitation)[0] === inviteeEmail){
-        return true
-      } else {
-        return false
-      }
-    })
-    if(invitee.length > 0){
-      res.status(201).send('Invited!')
-      return
+    const {  inviteeEmail } = req.body
+    if(authUser.hasOwnProperty('tour') || authUser.tour === 'null'){
+      res.status(403).send('You need to be in a tour group');
+      return;
     }
-  }
-  // third, add invitee email in invitations list if not exisit
-  const createInvite = await db.ref(`/tours/${tourId}/invitations`).push({inviteeEmail});
-  // fourth, return invitation key
-  console.log(createInvite)
-  res.status(201).json(createInvite)
-  return
+    const tourId = authUser.tour
+    // first, find current user tour
+    const tourSnapshot = await db.ref(`/tours/${tourId}/`).once('value');
+    const tour = tourSnapshot.val();
+    if(!tour){
+      res.status(404).send('Tour not found');
+      return;
+    }
+    // second, check for invitations by invitee email, prevent duplicate
+    if(tour.hasOwnProperty("invitations")){
+      let invitee = tour.invitations.filter((invitation)=>{
+        if(Object.values(invitation)[0] === inviteeEmail){
+          return true
+        } else {
+          return false
+        }
+      })
+      if(invitee.length > 0){
+        res.status(201).send('Invited!')
+        return
+      }
+    }
+    // third, add invitee email in invitations list if not exisit
+    const createInvite = await db.ref(`/tours/${tourId}/invitations`).push({inviteeEmail});
+    // fourth, return invitation key
+    console.log(createInvite)
+    res.status(201).json(createInvite)
+    return
   }catch(err){
     next(err);
   }
