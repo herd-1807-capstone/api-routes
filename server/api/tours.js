@@ -205,7 +205,7 @@ router.post('/:tourId/users/', async(req, res, next) => {
     users.push(userId);
 
     await db.ref(`/tours/${tourId}`).update({users});
-    res.status(201).send();
+    res.status(201).send('User added to tour');
   }catch(err){
     next(err);
   }
