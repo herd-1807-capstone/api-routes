@@ -207,6 +207,79 @@ router.post('/:tourId/users/', async(req, res, next) => {
   }
 });
 
+
+// add a member to a tour by link
+router.post('/:tourId/invitations/:inviteId', async(req, res, next) => {
+  try{
+    const authUser = req.authUser;
+    const userId = authUser.uid
+    const { tourId, inviteId } = req.params;
+  // first, get tour info by tourId
+    const tourSnapshot = await db.ref(`/tours/${tourId}/`).once('value');
+    const tour = tourSnapshot.val();
+    if(!tour || !tour.invitations.hasOwnProperty(inviteId)){
+      res.status(404).send('Tour not found');
+      return;
+    }
+  // second, check if user email is in invitation list
+    if(tour.invitations[inviteId] !== authUser.email){
+      res.status(403).send('Forbidden');
+      return;
+    }
+  
+  // third, add userId to tours/tourId/users
+    const users = Array.isArray(tour.users) ? tour.users : Object.values(tour.users);
+  // update the users list, then update
+    users.push(userId);
+    await db.ref(`/tours/${tourId}`).update({users});
+  // fourth, add tourId to user's profile
+    const updateUser = {tour:tourId};
+    await db.ref(`/users/${userId}`).update(updateUser);
+    res.status(201).send("Welcome to the tour!");
+  }catch(err){
+    next(err);
+  }
+});
+
+// create an invitation
+router.post('/:tourId/invitation/add', async(req, res, next) => {
+  try{
+    const authUser = req.authUser;
+    console.log(authUser)
+    const userId = authUser.uid
+    const { tourId, inviteeEmail} = req.params;
+  // first, find current user tour
+  const tourSnapshot = await db.ref(`/tours/${tourId}/`).once('value');
+  const tour = tourSnapshot.val();
+  if(!tour){
+    res.status(404).send('Tour not found');
+    return;
+  }
+  // second, check for invitations by invitee email, prevent duplicate
+  if(tour.hasOwnProperty("invitations")){
+    let invitee = tour.invitations.filter((invitation)=>{
+      if(Object.values(invitation)[0] === inviteeEmail){
+        return true
+      } else {
+        return false
+      }
+    })
+    if(invitee.length > 0){
+      res.status(201).send('Invited!')
+      return
+    }
+  }
+  // third, add invitee email in invitations list if not exisit
+  const createInvite = await db.ref(`/tours/${tourId}/invitations`).push({inviteeEmail});
+  // fourth, return invitation key
+  console.log(createInvite)
+  res.status(201).json(createInvite)
+  return
+  }catch(err){
+    next(err);
+  }
+});
+
 // delete a user id from a tour
 router.delete('/:tourId/users/:userId', async(req, res, next) => {
   try{
