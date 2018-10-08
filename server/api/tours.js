@@ -241,7 +241,7 @@ router.put('/:tourId/users/:userId', async (req, res, next) => {
     const authUser = req.authUser;
 
     const {tourId, userId} = req.params;
-    const {lat, lng} = req.body;
+    const {lat, lng, lastSeen} = req.body;
     const tourSnapshot = await db.ref(`/tours/${tourId}`).once('value');
     const tour = tourSnapshot.val();
     if(!tour){
@@ -263,7 +263,7 @@ router.put('/:tourId/users/:userId', async (req, res, next) => {
 
     // update the user with a new pair of lat and lng
     await db.ref(`/users/${userId}`).update({
-      lat, lng
+      lat, lng, lastSeen
     });
 
     res.status(201).send();
