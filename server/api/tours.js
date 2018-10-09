@@ -211,7 +211,7 @@ router.post('/:tourId/users/', async(req, res, next) => {
 });
 
 //write all user location to tour history
-router.post(':tourId/history', async(req, res, next) => {
+router.post('/:tourId/history', async(req, res, next) => {
   try {
     const authUser = req.authUser;
     const { tourId } = req.params;
