@@ -53,8 +53,25 @@ router.get('/:userId', async (req, res, next) => {
     const userId = req.params.userId;
     const userSnapshot = await db.ref(`/users/${userId}`).once('value');
     const user = userSnapshot.val();
-
     if (req.authUser.status === 'admin' || user.uid === userId){
+      res.json(user);
+    } else {
+      res.status(403).send('Forbidden');
+      return;
+    }
+  } catch (err){
+    next(err);
+  }
+});
+
+// GET /users/email/:email
+router.get('/email/:email', async (req, res, next) => {
+  try {
+    const email = req.params.email;
+    const userSnapshot = await db.ref(`/users/`).orderByChild('email').equalTo(email).once('value');
+    const [user] = Object.values(userSnapshot.val());
+    console.log(user)
+    if (req.authUser.status === 'admin' && (!user.hasOwnProperty('tour') || (user.hasOwnProperty('tour') && user.tour === 'null'))){
       res.json(user);
     } else {
       res.status(403).send('Forbidden');
@@ -98,17 +115,16 @@ router.post('/', async(req, res, next) => {
 // PUT /users/:userId
 router.put('/:userId', async(req, res, next) => {
   try {
-    const userId = req.params.userId;
     const authUser = req.authUser;
-    // make sure the logged-in user is an admin or the account owner.
-    console.log(userId, authUser.uid);
-    console.log(authUser.status !== 'admin' && authUser.uid !== userId);
-    if (authUser.status !== 'admin' && authUser.uid !== userId){
+    // make sure the logged-in user is an admin.
+    if (authUser.status !== 'admin'){
       res.status(403).send('Forbidden');
       return;
     }
 
+    const userId = req.params.userId;
     const {email, lat, lng, name, status, tour, visible} = req.body;
+
     const user = {};
     if(email) user.email = email;
     if(lat) user.lat = lat;
@@ -119,7 +135,6 @@ router.put('/:userId', async(req, res, next) => {
     if(visible !== undefined) user.visible = visible;
 
     const update = await db.ref(`/users/${userId}`).update(user);
-
     res.status(201).json(update);
   }catch(err){
     next(err);
