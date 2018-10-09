@@ -9,11 +9,14 @@ router.post('/:userId', async (req, res, next) => {
     // const fromId = req.authUser;
     const { text, tourId, fromId } = req.body;
     const toId = req.params.userId;
-    const conversationRef = [fromId + '_' + toId, toId + '_' + fromId];
-    const conversationObj = await db
+    const conversationSnapshot = await db
       .ref(`/users/${fromId}/conversations`)
       .orderByValue()
-      .equalTo(conversationRef[0] || conversationRef[1]);
+      .equalTo(toId)
+      .once('value');
+
+    const conversationObj = conversationSnapshot.val();
+
     const timestamp = firebase.database.ServerValue.TIMESTAMP;
     const newMessage = {
       fromId,
@@ -21,27 +24,23 @@ router.post('/:userId', async (req, res, next) => {
       text,
       timestamp,
     };
-    const updates = {};
-
-    if (conversationObj.length < 1) {
-      const newMessageKey = db
-        .ref(`/users/${fromId}`)
-        .child('conversation')
-        .push().key;
-      updates[`/users/${fromId}/conversations/${newMessageKey}`] =
-        conversationRef[0];
-      updates[`/users/${toId}/conversations/${newMessageKey}`] =
-        conversationRef[0];
-      updates[`/tours/${tourId}/conversations/${newMessageKey}`] = newMessage;
+    let conversationKey;
+    if (conversationObj) {
+      conversationKey = Object.keys(conversationObj)[0];
     } else {
-      updates[
-        `/tours/${tourId}/conversations/${conversationObj.key}`
-      ] = newMessage;
+      conversationKey = await db.ref(`/users/${fromId}/conversations`).push()
+        .key;
+      const updates = {};
+
+      updates[`/users/${fromId}/conversations/${conversationKey}`] = toId;
+      updates[`/users/${toId}/conversations/${conversationKey}`] = fromId;
+      await db.ref().update(updates);
     }
+    await db
+      .ref(`/tours/${tourId}/conversations/${conversationKey}`)
+      .push(newMessage);
 
-    await db.ref().update(updates);
-
-    res.status(201);
+    res.status(201).json({ conversationKey });
   } catch (error) {
     next(error);
   }
