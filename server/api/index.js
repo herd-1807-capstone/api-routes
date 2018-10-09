@@ -1,28 +1,30 @@
-const {admin, db} = require('./firebaseadmin');
+const { admin, db } = require('./firebaseadmin');
 const router = require('express').Router();
 module.exports = router;
 
 // a middleware authenticating a logged-in user and adding that user instance to the request.
 router.use(async (req, res, next) => {
-  try{
-    const {access_token} = req.query;
-    if(!access_token){
+  try {
+    const { access_token } = req.query;
+    if (!access_token) {
       const error = new Error('Forbidden');
       error.status = 403;
       next(error);
       return;
     }
     const decodedToken = await admin.auth().verifyIdToken(access_token);
-    if(!decodedToken){
+    if (!decodedToken) {
       const error = new Error('Forbidden');
       error.status = 403;
       next(error);
       return;
     }
-    const authUserSnapshot = await db.ref(`/users/${decodedToken.uid}`).once('value');
+    const authUserSnapshot = await db
+      .ref(`/users/${decodedToken.uid}`)
+      .once('value');
     const authUser = authUserSnapshot.val();
     // a user must be logged-in to retrieve data.
-    if(!authUser){
+    if (!authUser) {
       const error = new Error('Auth User Not Found in DB');
       error.status = 403;
       next(error);
@@ -30,7 +32,7 @@ router.use(async (req, res, next) => {
     }
     req.authUser = authUser;
     next();
-  }catch(err){
+  } catch (err) {
     next(err);
   }
 });
