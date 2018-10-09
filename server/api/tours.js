@@ -45,13 +45,9 @@ router.post('/', async(req, res, next) => {
         "0": authUser.uid
       },
       description,
-<<<<<<< HEAD
       imgUrl, 
       startDateTime, 
       endDateTime,
-=======
-      imgUrl,
->>>>>>> a1dd186a221cb994851eb0e89287e4f08c9ac484
     };
 
     const tourCreated = await db.ref(`/tours/`).push(tour);
@@ -251,7 +247,7 @@ router.post('/:tourId/invitation/add', async(req, res, next) => {
     const authUser = req.authUser;
     const userId = authUser.uid
     const {  inviteeEmail } = req.body
-    if(authUser.hasOwnProperty('tour') || authUser.tour === 'null'){
+    if(!authUser.hasOwnProperty('tour')){
       res.status(403).send('You need to be in a tour group');
       return;
     }
