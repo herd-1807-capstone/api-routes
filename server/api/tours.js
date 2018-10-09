@@ -210,6 +210,30 @@ router.post('/:tourId/users/', async(req, res, next) => {
   }
 });
 
+//write all user location to tour history
+router.post('/:tourId/history', async(req, res, next) => {
+  try {
+    const authUser = req.authUser;
+    const { tourId } = req.params;
+    const {locationData} = req.body;
+    if(authUser.status !== 'admin' || authUser.tour !== tourId){
+      res.status(403).send('Forbidden');//only admin records the history for their current tour
+      return;
+    }
+    const tourRef = db.ref(`/tours/${tourId}`);
+
+    const snap = await tourRef.once('value');
+    const tourInfo = snap.val();
+
+    if (Date.now() < tourInfo.startDateTime || Date.now() > tourInfo.endDateTime) return;
+
+    const updated = await tourRef.child('history').update(locationData); //batch update at once
+    if (updated) res.sendStatus(201);
+  } catch (error) {
+    next(error);
+  }
+})
+
 // delete a user id from a tour
 router.delete('/:tourId/users/:userId', async(req, res, next) => {
   try{
