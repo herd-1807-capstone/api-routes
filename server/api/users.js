@@ -64,6 +64,24 @@ router.get('/:userId', async (req, res, next) => {
   }
 });
 
+// GET /users/email/:email
+router.get('/email/:email', async (req, res, next) => {
+  try {
+    const email = req.params.email;
+    const userSnapshot = await db.ref(`/users/`).orderByChild('email').equalTo(email).once('value');
+    const [user] = Object.values(userSnapshot.val());
+    console.log(user)
+    if (req.authUser.status === 'admin' && (!user.hasOwnProperty('tour') || (user.hasOwnProperty('tour') && user.tour === 'null'))){
+      res.json(user);
+    } else {
+      res.status(403).send('Forbidden');
+      return;
+    }
+  } catch (err){
+    next(err);
+  }
+});
+
 // POST /users
 router.post('/', async(req, res, next) => {
   try {
@@ -117,7 +135,6 @@ router.put('/:userId', async(req, res, next) => {
     if(visible !== undefined) user.visible = visible;
 
     const update = await db.ref(`/users/${userId}`).update(user);
-
     res.status(201).json(update);
   }catch(err){
     next(err);
