@@ -122,14 +122,14 @@ router.post('/', async(req, res, next) => {
 // PUT /users/:userId
 router.put('/:userId', async(req, res, next) => {
   try {
+    const userId = req.params.userId;
     const authUser = req.authUser;
     // make sure the logged-in user is an admin.
-    if (authUser.status !== 'admin'){
+    if (authUser.status !== 'admin' && authUser.uid !== userId){
       res.status(403).send('Forbidden');
       return;
     }
 
-    const userId = req.params.userId;
     const {email, lat, lng, name, status, tour, visible} = req.body;
 
     const user = {};

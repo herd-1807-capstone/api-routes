@@ -22,7 +22,6 @@ router.get('/:tourId', async(req, res, next) => {
       res.status(404).send('Not Found');
       return;
     }
-
     res.json(tour);
   }catch(err){
     next(err);
@@ -46,9 +45,13 @@ router.post('/', async(req, res, next) => {
         "0": authUser.uid
       },
       description,
+<<<<<<< HEAD
       imgUrl, 
       startDateTime, 
       endDateTime,
+=======
+      imgUrl,
+>>>>>>> a1dd186a221cb994851eb0e89287e4f08c9ac484
     };
 
     const tourCreated = await db.ref(`/tours/`).push(tour);
@@ -95,12 +98,6 @@ router.delete('/:tourId', async(req, res, next) => {
 // PUT /tours/:tourId
 router.put('/:tourId', async(req, res, next) => {
   try{
-    const authUser = req.authUser;
-    // if(authUser.status !== 'admin'){
-    //   res.status(403).send('Forbidden');
-    //   return;
-    // }
-
     const {name, announcement, users} = req.body;
     const tourId = req.params.tourId;
     // make sure there is a tour with the given tour id and the currentUser has permission to change the tour.
@@ -110,11 +107,6 @@ router.put('/:tourId', async(req, res, next) => {
       res.status(404).send('Tour Not Found');
       return;
     }
-
-    // if(!tour.users || !tour.users.indexOf(authUser.uid) < 0){
-    //   res.status(403).send('Forbidden');
-    //   return;
-    // }
 
     const tourUpdated = {}; // just name and/or announcement;
     if(name) tourUpdated.name = name;
@@ -237,7 +229,7 @@ router.post('/:tourId/invitations/:inviteId', async(req, res, next) => {
       res.status(403).send('Forbidden');
       return;
     }
-  
+
   // third, add userId to tours/tourId/users
     const users = Array.isArray(tour.users) ? tour.users : Object.values(tour.users);
   // update the users list, then update
@@ -257,7 +249,6 @@ router.post('/:tourId/invitations/:inviteId', async(req, res, next) => {
 router.post('/:tourId/invitation/add', async(req, res, next) => {
   try{
     const authUser = req.authUser;
-    console.log(authUser)
     const userId = authUser.uid
     const {  inviteeEmail } = req.body
     if(authUser.hasOwnProperty('tour') || authUser.tour === 'null'){
@@ -289,7 +280,6 @@ router.post('/:tourId/invitation/add', async(req, res, next) => {
     // third, add invitee email in invitations list if not exisit
     const createInvite = await db.ref(`/tours/${tourId}/invitations`).push({inviteeEmail});
     // fourth, return invitation key
-    console.log(createInvite)
     res.status(201).json(createInvite)
     return
   }catch(err){
