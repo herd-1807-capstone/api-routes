@@ -18,19 +18,8 @@ router.get('/:tourId', async(req, res, next) => {
     const tourId = req.params.tourId;
     const tourSnapshot = await db.ref(`/tours/${tourId}`).once('value');
     const tour = tourSnapshot.val();
-<<<<<<< HEAD
-    if(!tour){
-      res.json({});
-      return;
-    }
-    const users = tour.users;
-    // check if current user is either an admin of this tour or a member.
-    if(!users || users.indexOf(req.authUser.uid) < 0){
-      res.status(403).send('Forbidden');
-=======
     if (!tour){
       res.status(404).send('Not Found');
->>>>>>> 604153486d05291bc3e641243c8ebc41cd334ca5
       return;
     }
 
