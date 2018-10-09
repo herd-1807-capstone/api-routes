@@ -93,7 +93,7 @@ router.post('/', async(req, res, next) => {
     }
 
     // parse info from req.body - email, lat, lng, name, status, tour, visible
-    let {email, lat, lng, name, status, tour, visible} = req.body;
+    let {email, lat, lng, name, tour, status, visible, uid} = req.body;
 
     const user = {email, lat, lng, name};
     if (tour) user.tour = tour;
@@ -103,10 +103,17 @@ router.post('/', async(req, res, next) => {
     if (!status) status = 'member';
     user.status = status;
 
+    if (uid) user.uid = uid
+
     const userCreated = await db.ref('/users').push(user);
+    console.log('User created!')
+    console.log(userCreated.val())
+    let newUser = await db.ref(`/users/${user.uid}`).once('value');
+    console.log('Get new create user data')
+    console.log(newUser)
 
     // return the created user's key to the client
-    res.json({key: userCreated.key});
+    res.json(userCreated.val());
   } catch (err){
     next(err);
   }

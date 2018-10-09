@@ -37,7 +37,7 @@ router.post('/', async(req, res, next) => {
       return;
     }
 
-    const {name, description, imgUrl} = req.body;
+    const {name, description, imgUrl, startDateTime, endDateTime} = req.body;
     const tour = {
       name,
       guideUId: authUser.uid,
@@ -45,7 +45,9 @@ router.post('/', async(req, res, next) => {
         "0": authUser.uid
       },
       description,
-      imgUrl,
+      imgUrl, 
+      startDateTime, 
+      endDateTime,
     };
 
     const tourCreated = await db.ref(`/tours/`).push(tour);
@@ -232,7 +234,8 @@ router.post('/:tourId/invitations/:inviteId', async(req, res, next) => {
   // fourth, add tourId to user's profile
     const updateUser = {tour:tourId};
     await db.ref(`/users/${userId}`).update(updateUser);
-    res.status(201).send("Welcome to the tour!");
+    // res.status(201).send("Welcome to the tour!");
+    res.redirect('https://herd-217719.firebaseapp.com/')
   }catch(err){
     next(err);
   }
@@ -244,7 +247,7 @@ router.post('/:tourId/invitation/add', async(req, res, next) => {
     const authUser = req.authUser;
     const userId = authUser.uid
     const {  inviteeEmail } = req.body
-    if(authUser.hasOwnProperty('tour') || authUser.tour === 'null'){
+    if(!authUser.hasOwnProperty('tour')){
       res.status(403).send('You need to be in a tour group');
       return;
     }
