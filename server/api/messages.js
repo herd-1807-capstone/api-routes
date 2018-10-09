@@ -6,8 +6,8 @@ module.exports = router;
 // POST /api/chat/:userId
 router.post('/:userId', async (req, res, next) => {
   try {
-    // const fromId = req.authUser;
-    const { text, tourId, fromId } = req.body;
+    const fromId = req.authUser;
+    const { text, tourId } = req.body;
     const toId = req.params.userId;
     const conversationSnapshot = await db
       .ref(`/users/${fromId}/conversations`)
