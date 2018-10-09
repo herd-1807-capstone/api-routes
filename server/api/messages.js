@@ -1,4 +1,5 @@
 const { db } = require('./firebaseadmin');
+const firebase = require('firebase');
 const router = require('express').Router();
 module.exports = router;
 
@@ -8,16 +9,38 @@ router.post('/:userId', async (req, res, next) => {
     const fromId = req.authUser;
     const { text, tourId } = req.body;
     const toId = req.params.userId;
-    const newMessage = { fromId, text, toId };
-    const newKey = await db
-      .ref(`/tours/${tourId}`)
-      .child(`messages`)
-      .push().key;
+    const conversationSnapshot = await db
+      .ref(`/users/${fromId}/conversations`)
+      .orderByValue()
+      .equalTo(toId)
+      .once('value');
 
-    const message = {};
-    message[`${newKey}`] = newMessage;
-    await db.ref(`/tours/${tourId}/messages/`).update(message);
-    res.status(201);
+    const conversationObj = conversationSnapshot.val();
+
+    const timestamp = firebase.database.ServerValue.TIMESTAMP;
+    const newMessage = {
+      fromId,
+      toId,
+      text,
+      timestamp,
+    };
+    let conversationKey;
+    if (conversationObj) {
+      conversationKey = Object.keys(conversationObj)[0];
+    } else {
+      conversationKey = await db.ref(`/users/${fromId}/conversations`).push()
+        .key;
+      const updates = {};
+
+      updates[`/users/${fromId}/conversations/${conversationKey}`] = toId;
+      updates[`/users/${toId}/conversations/${conversationKey}`] = fromId;
+      await db.ref().update(updates);
+    }
+    await db
+      .ref(`/tours/${tourId}/conversations/${conversationKey}`)
+      .push(newMessage);
+
+    res.status(201).json({ conversationKey });
   } catch (error) {
     next(error);
   }
