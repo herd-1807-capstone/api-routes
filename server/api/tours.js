@@ -45,8 +45,8 @@ router.post('/', async(req, res, next) => {
         "0": authUser.uid
       },
       description,
-      imgUrl, 
-      startDateTime, 
+      imgUrl,
+      startDateTime,
       endDateTime,
     };
 
@@ -314,7 +314,7 @@ router.delete('/:tourId/users/:userId', async(req, res, next) => {
       res.status(403).send('Forbidden');
       return;
     }
-    
+
     const {tourId, userId} = req.params;
     // First, get the list of userIds of a tour
     const tourSnapshot = await db.ref(`/tours/${tourId}`).once('value');

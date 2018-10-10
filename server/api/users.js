@@ -70,7 +70,6 @@ router.get('/email/:email', async (req, res, next) => {
     const email = req.params.email;
     const userSnapshot = await db.ref(`/users/`).orderByChild('email').equalTo(email).once('value');
     const [user] = Object.values(userSnapshot.val());
-    console.log(user)
     if (req.authUser.status === 'admin' && (!user.hasOwnProperty('tour'))){
       res.json(user);
     } else {
@@ -106,11 +105,7 @@ router.post('/', async(req, res, next) => {
     if (uid) user.uid = uid
 
     const userCreated = await db.ref('/users').push(user);
-    console.log('User created!')
-    console.log(userCreated.val())
     let newUser = await db.ref(`/users/${user.uid}`).once('value');
-    console.log('Get new create user data')
-    console.log(newUser)
 
     // return the created user's key to the client
     res.json(userCreated.val());
@@ -138,10 +133,12 @@ router.put('/:userId', async(req, res, next) => {
     if(lng) user.lng = lng;
     if(name) user.name = name;
     if(status) user.status = status;
-    if(tour) {
-      user.tour = tour;
-    } else {
+    // if tour comes as null, then make user's tour to null.
+    // Note if tour comes as undefined, then don't touch user's tour field.
+    if(tour === null) {
       user.tour = null;
+    }else if(tour !== undefined){
+      user.tour = tour;
     }
     if(visible !== undefined) user.visible = visible;
     const update = await db.ref(`/users/${userId}`).update(user);
