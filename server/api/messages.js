@@ -6,8 +6,7 @@ module.exports = router;
 // POST /api/chat/:userId
 router.post('/:userId', async (req, res, next) => {
   try {
-    const fromId = req.authUser;
-    const { text, tourId } = req.body;
+    const { fromId, text, tourId } = req.body;
     const toId = req.params.userId;
     const conversationSnapshot = await db
       .ref(`/users/${fromId}/conversations`)
@@ -16,11 +15,17 @@ router.post('/:userId', async (req, res, next) => {
       .once('value');
 
     const conversationObj = conversationSnapshot.val();
+    const fromSnapshot = await db.ref(`/users/${fromId}`).once('value');
+    const fromName = fromSnapshot.val().name;
+    const toSnapshot = await db.ref(`/users/${toId}`).once('value');
+    const toName = toSnapshot.val().name;
 
     const timestamp = firebase.database.ServerValue.TIMESTAMP;
     const newMessage = {
       fromId,
       toId,
+      fromName,
+      toName,
       text,
       timestamp,
     };
