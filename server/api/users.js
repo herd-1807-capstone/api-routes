@@ -38,7 +38,7 @@ router.get('/free', async (req, res, next) => {
     const usersSnapshot = await db.ref(`/users/`).once('value');
     const users = Object.values(usersSnapshot.val());
     let selectedUser = users.filter((user) => {
-      return (!(user.hasOwnProperty('tour')) || user.tour === 'null');
+      return (!(user.hasOwnProperty('tour')));
     });
 
     res.json(selectedUser);
@@ -71,7 +71,7 @@ router.get('/email/:email', async (req, res, next) => {
     const userSnapshot = await db.ref(`/users/`).orderByChild('email').equalTo(email).once('value');
     const [user] = Object.values(userSnapshot.val());
     console.log(user)
-    if (req.authUser.status === 'admin' && (!user.hasOwnProperty('tour') || (user.hasOwnProperty('tour') && user.tour === 'null'))){
+    if (req.authUser.status === 'admin' && (!user.hasOwnProperty('tour'))){
       res.json(user);
     } else {
       res.status(403).send('Forbidden');
@@ -138,9 +138,12 @@ router.put('/:userId', async(req, res, next) => {
     if(lng) user.lng = lng;
     if(name) user.name = name;
     if(status) user.status = status;
-    if(tour) user.tour = tour;
+    if(tour) {
+      user.tour = tour;
+    } else {
+      user.tour = null;
+    }
     if(visible !== undefined) user.visible = visible;
-
     const update = await db.ref(`/users/${userId}`).update(user);
     res.status(201).json(update);
   }catch(err){

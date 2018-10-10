@@ -191,14 +191,13 @@ router.post('/:tourId/users/', async(req, res, next) => {
     const users = Array.isArray(tour.users) ? tour.users : Object.values(tour.users);
 
     // check if current user is either an admin of this tour or a member.
-    if(!users || users.indexOf(authUser.uid) < 0){
+    if(!users || users.indexOf(authUser.uid) < 0 || !userId){
       res.status(403).send('Forbidden');
       return;
     }
 
     // update the users list, then update
     users.push(userId);
-
     await db.ref(`/tours/${tourId}`).update({users});
     res.status(201).send('User added to tour');
   }catch(err){
@@ -315,7 +314,7 @@ router.delete('/:tourId/users/:userId', async(req, res, next) => {
       res.status(403).send('Forbidden');
       return;
     }
-
+    
     const {tourId, userId} = req.params;
     // First, get the list of userIds of a tour
     const tourSnapshot = await db.ref(`/tours/${tourId}`).once('value');
