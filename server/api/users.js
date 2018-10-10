@@ -9,8 +9,10 @@ router.get('/', (req, res, next) => {
       res.status(403).send('Forbidden');
       return;
     }
-
     let currentUser = req.authUser;
+    if (!currentUser.tour){
+      res.status(404).send('You are not in a group')
+    }
     db.ref(`/users/`)
       .orderByChild('tour')
       .equalTo(currentUser.tour)
