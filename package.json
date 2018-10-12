@@ -16,5 +16,12 @@
     "start": "set NODE_ENV=production && node ./server/index.js",
     "start-dev": "set NODE_ENV=development && nodemon server",
     "start-backend": "nodemon ./server/index.js"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-things": "^0.2.0",
+    "firebase-server": "^1.0.0",
+    "mocha": "^5.2.0",
+    "supertest": "^3.3.0"
   }
 }
